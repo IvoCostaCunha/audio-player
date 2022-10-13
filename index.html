@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="fr">
+
+<head>
+    <meta charset="utf-8">
+    <title>Mon premier web component</title>
+    <script rel="import" src="./audio-player-component/index.js" type="module"></script>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>   
+
+<body>
+    <h1>Demostration of my web Component</h1>
+    <audio-player>
+        <slot name="audio-src"="https://samplelib.com/lib/preview/mp4/sample-5s.mp4"></slot>
+    </audio-player>
+    
+    <footer> Demo Page </footer>
+</body>
+
+</html>
