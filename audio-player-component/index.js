@@ -24,13 +24,15 @@ let style = `
   
 }
 #canvas {
-  background-color: beige;
   border-radius : 50%;
   box-shadow: 2px 2px 8px rgba(32, 32, 32, 0.4), -2px -2px 8px rgba(10,10,10,1);
 
 }
 #buttons_div {
-  background-color: blue;
+  border-radius : 25%;
+  padding: 5%;
+  background-color: beige;
+  box-shadow: 2px 2px 8px rgba(32, 32, 32, 0.4), -2px -2px 8px rgba(10,10,10,1);
 }
 </style>
 `
@@ -54,15 +56,16 @@ const template = `
 </div>
 `
 
+// Pie chart https://code.tutsplus.com/tutorials/how-to-draw-a-pie-chart-and-doughnut-chart-using-javascript-and-html5-canvas--cms-27197
+// https://www.codeblocq.com/2016/04/Create-a-Pie-Chart-with-HTML5-canvas/
+
 class AudioPlayer extends HTMLElement {
     constructor() {
       super()
       this.attachShadow({mode: 'open'})
       this.html = style
       this.html = this.html + template
-      this.song = "Song A"
-      this.artist = "Artist A"
-      this.album = "Album A"
+      this.loop = false
     }
     
     fix_relative_urls() {
@@ -75,64 +78,94 @@ class AudioPlayer extends HTMLElement {
     }
 
     draw_ui() {
-      let canvas = this.shadowRoot.querySelector("#canvas")
-      let ctx = canvas.getContext("2d")
-      ctx.antialias = true
-      ctx.font = '12px Arial'
-
-      requestAnimationFrame(() => {this.update_ui(ctx)})
+      this.ctx.antialias = true
+      this.ctx.font = '12px Arial'
+      requestAnimationFrame(() => this.update_ui())
     }
 
-    update_ui(ctx) {
+    update_ui() {
+
+      this.ctx.clearRect(0, 0, this.width, this.height)
+
       let file_name = this.player.src.substring(this.player.src.lastIndexOf ('/')+1)
       let time_info = this.shadowRoot.querySelector("#player").duration
 
-      this.draw_circle(ctx)
       
       for(let i = 30; i <= 360; i += 30) {
         let x = i*Math.round(Math.cos(i))
         let y = i*Math.round(Math.sin(i))
-        //console.log("x : " + x + " y : " + y)
-        this.draw_line(ctx, x, y)
+        this.draw_line(x, y)
       }
       
-      this.draw_circle(ctx, 210)
-      this.draw_circle(ctx, 200)
-      this.draw_circle(ctx, 100)
+      this.draw_circle(210)
+      this.draw_circle(200)
+      this.draw_circle(100)
 
-      console.log("song duration : " + time_info)
+      // loop zone (center)
+      this.draw_rect(270, 510, 60, 90)
+
+      // play zone (left center)
+      this.draw_rect(180, 490, 60, 105)
+
+      // pause zone (right center)
+      //this.draw_rect(this.ctx, 360, 490, 60, 105)
+
+      // +10s zone (right right center)
+      this.draw_rect(450, 440, 60, 120)
+
+      // -10s zone (left left center)
+      this.draw_rect(90, 440, 60, 120)
+
+      this.ctx.strokeText("./pause.png", 360, 510)
+
+      this.draw_circle(this.ctx)
       
       // For a canvas 600*600
-      ctx.strokeText(file_name, this.canvas_center_x-45, this.canvas_center_y)
-      ctx.strokeText(time_info, this.canvas_center_x-20, this.canvas_center_y+40)
+      this.ctx.strokeText(file_name, this.canvas_center_x-45, this.canvas_center_y)
+      this.ctx.strokeText(time_info, this.canvas_center_x-20, this.canvas_center_y+40)
 
-      ctx.clearRect(0, 0, this.width, this.height)
-
-
-      setTimeout(() => {console.log("waiting 2s")},"10000")
-
-      //this.height += 1
-
-      requestAnimationFrame(this.update_ui)
+      requestAnimationFrame(() => this.update_ui())
     }
 
-    draw_circle(ctx, r = this.radius, center_x = this.canvas_center_x, center_y = this.canvas_center_y, background_color = "#FFFFFF", stroke_color = "#000000") {
-      ctx.beginPath();
-      ctx.arc(center_x, center_y, r, 0, 2 * Math.PI, false);
-      ctx.fillStyle = background_color;
-      ctx.lineWidth = 1;
-      ctx.strokeStyle = stroke_color;
-      ctx.fill();
-      ctx.stroke();
+    draw_circle(r = this.radius, center_x = this.canvas_center_x, center_y = this.canvas_center_y, background_color = "#FFFFFF", stroke_color = "#000000") {
+      this.ctx.save()
+      this.ctx.beginPath();
+      this.ctx.arc(center_x, center_y, r, 0, 2 * Math.PI, false);
+      this.ctx.fillStyle = background_color;
+      this.ctx.lineWidth = 1;
+      this.ctx.strokeStyle = stroke_color;
+      this.ctx.fill();
+      this.ctx.stroke();
+      this.ctx.restore()
     }
 
-    draw_line(ctx, end_x, end_y, start_x = this.canvas_center_x, start_y = this.canvas_center_y,  stroke_color = "#000000") {
-      ctx.beginPath();
-      ctx.moveTo(start_x, start_y)
-      ctx.lineTo(end_x, end_y)
-      ctx.lineWidth = 1;
-      ctx.strokeStyle = stroke_color
-      ctx.stroke();
+    draw_line(end_x, end_y, start_x = this.canvas_center_x, start_y = this.canvas_center_y,  stroke_color = "#000000") {
+      this.ctx.save()
+      this.ctx.beginPath();
+      this.ctx.moveTo(start_x, start_y)
+      this.ctx.lineTo(end_x, end_y)
+      this.ctx.lineWidth = 1;
+      this.ctx.strokeStyle = stroke_color
+      this.ctx.stroke();
+      this.ctx.restore()
+    }
+
+    draw_rect(x ,y , width, height) {
+      this.ctx.save()
+      this.ctx.fillStyle = "#000000"
+      this.ctx.fillRect(x, y, width, height);
+      this.ctx.restore()
+    }
+
+    draw_img(src, x, y) {
+      this.ctx.save()
+      let img = new Image()
+      img.src = src
+      this.ctx.drawImage(img, x, y)
+      img.onload= (img, x, y) => {
+        this.ctx.drawImage(img, x, y)
+      }
+      this.ctx.restore()
     }
 
     set_audio_player() {
@@ -143,32 +176,86 @@ class AudioPlayer extends HTMLElement {
 
     }
 
+    set_loop() {
+      // condition ? exprIfTrue : exprIfFalse
+      this.player.loop = this.player.loop ? false : true
+      this.shadowRoot.querySelector("#loop").style.backgroundColor = this.player.loop ? "green" : "blue"
+      console.log("loop : " + this.player.loop)
+    }
+
+    play() {
+      console.log("play !")
+      this.player.play()
+    }
+
+    pause() {
+      console.log("pause !")
+      this.player.pause()
+    }
+
+    set_volume(e) {
+      const volume = e.target.value
+      this.player.volume = volume
+      const label_text = "volume : " + (volume*100)
+      this.shadowRoot.querySelector("#volume-value").textContent = label_text
+    }
+
+    plus_seconds(seconds) {
+
+    }
+
+    less_seconds(seconds) {
+
+    }
+
     set_listeners() {
       this.shadowRoot.querySelector("#play").onclick = () => {
-        console.log("play !")
-        this.player.play()
+        this.play()
       }
       this.shadowRoot.querySelector("#pause").onclick = () => {
-        console.log("pause !")
-        this.player.pause()
+        this.pause()
       }
       this.shadowRoot.querySelector("#loop").onclick = () => {
-        // condition ? exprIfTrue : exprIfFalse
-        this.player.loop = this.player.loop ? false : true
-        console.log("loop : " + this.player.loop)
+        this.set_loop()
       }
       this.shadowRoot.querySelector("#volume").oninput = (event) => {
-        const volume = event.target.value
-        this.player.volume = volume
-        const label_text = "volume : " + (volume*100)
-        this.shadowRoot.querySelector("#volume-value").textContent = label_text
+       this.set_volume(event)
       }
+      this.shadowRoot.querySelector("canvas").onclick = (event) => {
+
+        let get_mouse_position = (canvas,event) => {
+          let rect = canvas.getBoundingClientRect();
+          return {
+            x: event.clientX - rect.left,
+            y: event.clientY - rect.top
+          }
+        }
+
+        let is_inside = (pos, rect) => {
+          return pos.x > rect.x && pos.x < rect.x+rect.width && pos.y < rect.y+rect.height && pos.y > rect.y
+        }
+
+        var mouse_pos = get_mouse_position(this.canvas, event);
+        
+        let play_zone = {x: 180, y: 490, width: 60, height: 105}
+        let pause_zone = {x: 360, y: 490, width: 60, height: 105}
+        let plus10_zone = {x: 450, y: 440, width: 60, height: 120}
+        let less10_zone = {x: 90, y: 440, width: 60, height: 120}
+        let loop_zone = {x: 270, y: 510, width: 60, height: 90}
+
+        if (is_inside(mouse_pos, play_zone)) this.play()
+        else if (is_inside(mouse_pos, pause_zone)) this.pause()
+        else if (is_inside(mouse_pos, plus10_zone)) this.plus_seconds(10)
+        else if (is_inside(mouse_pos, less10_zone)) this.less_seconds(10)
+        else if (is_inside(mouse_pos, loop_zone)) this.set_loop()
+      }
+
       /*this.shadowRoot.querySelector("#mute").onclick = () => {
         this.player.mute = this.player.mute ? false : true
         console.log("muted : " + this.player.mute)
       }*/
     }
-
+      
     degrees_to_radiants(degrees) {
       return degrees*(Math.PI/180)
     }
@@ -185,12 +272,14 @@ class AudioPlayer extends HTMLElement {
     connectedCallback() {
       // called on instanciation
       this.shadowRoot.innerHTML = this.html;
-      this.height = this.shadowRoot.querySelector("canvas").height
-      this.width = this.shadowRoot.querySelector("canvas").width
+      this.canvas = this.shadowRoot.querySelector("canvas")
+      this.ctx = this.canvas.getContext("2d")
+      this.height = this.canvas.height
+      this.width = this.canvas.width
       this.canvas_center_x = this.width/2
       this.canvas_center_y = this.height/2
       console.log("canvas center : x : " + this.canvas_center_x  + " y : " + this.canvas_center_y)
-      this.radius = this.shadowRoot.querySelector("canvas").width/2
+      this.radius = this.canvas.width/2
       console.log("radius : " + this.radius)
       this.fix_relative_urls()
       this.set_audio_player()
