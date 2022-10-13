@@ -78,13 +78,21 @@ class AudioPlayer extends HTMLElement {
       let canvas = this.shadowRoot.querySelector("#canvas")
       let ctx = canvas.getContext("2d")
       ctx.antialias = true
+      ctx.font = '12px Arial'
+
+      requestAnimationFrame(() => {this.update_ui(ctx)})
+    }
+
+    update_ui(ctx) {
+      let file_name = this.player.src.substring(this.player.src.lastIndexOf ('/')+1)
+      let time_info = this.shadowRoot.querySelector("#player").duration
 
       this.draw_circle(ctx)
       
       for(let i = 30; i <= 360; i += 30) {
         let x = i*Math.round(Math.cos(i))
         let y = i*Math.round(Math.sin(i))
-        console.log("x : " + x + " y : " + y)
+        //console.log("x : " + x + " y : " + y)
         this.draw_line(ctx, x, y)
       }
       
@@ -92,15 +100,20 @@ class AudioPlayer extends HTMLElement {
       this.draw_circle(ctx, 200)
       this.draw_circle(ctx, 100)
 
-      ctx.font = '12px Arial'
-      let file_name = this.player.src.substring(this.player.src.lastIndexOf ('/')+1)
-      let time_info = this.shadowRoot.querySelector("#player").duration
-
       console.log("song duration : " + time_info)
       
       // For a canvas 600*600
       ctx.strokeText(file_name, this.canvas_center_x-45, this.canvas_center_y)
       ctx.strokeText(time_info, this.canvas_center_x-20, this.canvas_center_y+40)
+
+      ctx.clearRect(0, 0, this.width, this.height)
+
+
+      setTimeout(() => {console.log("waiting 2s")},"10000")
+
+      //this.height += 1
+
+      requestAnimationFrame(this.update_ui)
     }
 
     draw_circle(ctx, r = this.radius, center_x = this.canvas_center_x, center_y = this.canvas_center_y, background_color = "#FFFFFF", stroke_color = "#000000") {
@@ -172,8 +185,10 @@ class AudioPlayer extends HTMLElement {
     connectedCallback() {
       // called on instanciation
       this.shadowRoot.innerHTML = this.html;
-      this.canvas_center_x = this.shadowRoot.querySelector("canvas").width/2
-      this.canvas_center_y = this.shadowRoot.querySelector("canvas").height/2
+      this.height = this.shadowRoot.querySelector("canvas").height
+      this.width = this.shadowRoot.querySelector("canvas").width
+      this.canvas_center_x = this.width/2
+      this.canvas_center_y = this.height/2
       console.log("canvas center : x : " + this.canvas_center_x  + " y : " + this.canvas_center_y)
       this.radius = this.shadowRoot.querySelector("canvas").width/2
       console.log("radius : " + this.radius)
