@@ -34,6 +34,15 @@ let style = `
   background-color: beige;
   box-shadow: 2px 2px 8px rgba(32, 32, 32, 0.4), -2px -2px 8px rgba(10,10,10,1);
 }
+#buttons_div_left {
+  align-items: center;
+  align-self: left;
+}
+
+#buttons_div_right {
+  align-items: center;
+  align-self: right;
+}
 </style>
 `
 
@@ -43,15 +52,48 @@ const template = `
     <canvas id="canvas" width="600" height="600"></canvas><br>
   </div>
   <div id="buttons_div">
+
+    <div id="buttons_div_left">
+    
+    </div>
+
+    <div id="buttons_div_right">
+    
+    </div>
     <audio id="player"></audio><br>
-    <button id="play">play</button>
-    <button id="pause">pause</button>
     <button id="loop">loop</button><br>
-    <input type="range" min="0" max="1" step="0.05" value="0.2" id="volume" /><br>
+    <!--<button id="play">play</button>
+    <button id="pause">pause</button>
+    <input 
+      type="range" 
+      min="0" 
+      max="1" 
+      step="0.05" 
+      value="0.2" 
+      id="volume" />
+    <br>-->
     <label id="volume-value">volume : 20</label><br>
     <!--<button id="mute">mute</button>-->
-    <button id="plus">+10s</button>
-    <button id="less">-10s</button> 
+    <!--<button id="plus">+10s</button>
+    <button id="less">-10s</button><br>-->
+    <webaudio-knob 
+      id="volume_knob" 
+      src="./assets/web-audio/simple-gray.png" 
+      value="0.2" max="1" step="0.05" diameter="90" sprites="100" 
+      valuetip="0" tooltip="Volume">
+    </webaudio-knob>
+    <webaudio-knob 
+      id="x_knob" 
+      src="./assets/web-audio/simple-gray.png" 
+      value="0.2" max="1" step="0.05" diameter="90" sprites="100" 
+      valuetip="0" tooltip="Volume">
+    </webaudio-knob>
+    <webaudio-knob 
+      id="y_knob" 
+      src="./assets/web-audio/simple-gray.png" 
+      value="0.2" max="1" step="0.05" diameter="90" sprites="100" 
+      valuetip="0" tooltip="Volume">
+    </webaudio-knob>
   </div>
 </div>
 `
@@ -88,7 +130,8 @@ class AudioPlayer extends HTMLElement {
       this.ctx.clearRect(0, 0, this.width, this.height)
 
       let file_name = this.player.src.substring(this.player.src.lastIndexOf ('/')+1)
-      let time_info = this.shadowRoot.querySelector("#player").duration
+      let time_info_current = Math.round(this.player.currentTime,2) + " s" 
+      let time_info_duration = Math.round(this.player.duration,2) + " s"
 
       
       for(let i = 30; i <= 360; i += 30) {
@@ -122,7 +165,8 @@ class AudioPlayer extends HTMLElement {
       
       // For a canvas 600*600
       this.ctx.strokeText(file_name, this.canvas_center_x-45, this.canvas_center_y)
-      this.ctx.strokeText(time_info, this.canvas_center_x-20, this.canvas_center_y+40)
+      this.ctx.strokeText(time_info_current, this.canvas_center_x-10, this.canvas_center_y+20)
+      this.ctx.strokeText(time_info_duration, this.canvas_center_x-10, this.canvas_center_y+40)
 
       requestAnimationFrame(() => this.update_ui())
     }
@@ -201,25 +245,20 @@ class AudioPlayer extends HTMLElement {
     }
 
     plus_seconds(seconds) {
-
+      this.player.currrentTime = seconds
+      console.log(this.player.currentTime + "changed")
     }
 
     less_seconds(seconds) {
-
+      this.player.currrentTime -= seconds
     }
 
     set_listeners() {
-      this.shadowRoot.querySelector("#play").onclick = () => {
-        this.play()
-      }
-      this.shadowRoot.querySelector("#pause").onclick = () => {
-        this.pause()
-      }
       this.shadowRoot.querySelector("#loop").onclick = () => {
         this.set_loop()
       }
-      this.shadowRoot.querySelector("#volume").oninput = (event) => {
-       this.set_volume(event)
+      this.shadowRoot.querySelector('#volume_knob').oninput =  (event) => {
+        this.set_volume(event)
       }
       this.shadowRoot.querySelector("canvas").onclick = (event) => {
 
@@ -245,7 +284,7 @@ class AudioPlayer extends HTMLElement {
 
         if (is_inside(mouse_pos, play_zone)) this.play()
         else if (is_inside(mouse_pos, pause_zone)) this.pause()
-        else if (is_inside(mouse_pos, plus10_zone)) this.plus_seconds(10)
+        else if (is_inside(mouse_pos, plus10_zone)) this.plus_seconds(3)
         else if (is_inside(mouse_pos, less10_zone)) this.less_seconds(10)
         else if (is_inside(mouse_pos, loop_zone)) this.set_loop()
       }
@@ -253,6 +292,16 @@ class AudioPlayer extends HTMLElement {
       /*this.shadowRoot.querySelector("#mute").onclick = () => {
         this.player.mute = this.player.mute ? false : true
         console.log("muted : " + this.player.mute)
+      }*/
+
+      /*this.shadowRoot.querySelector("#volume").oninput = (event) => {
+       this.set_volume(event)
+      }
+      this.shadowRoot.querySelector("#play").onclick = () => {
+        this.play()
+      }
+      this.shadowRoot.querySelector("#pause").onclick = () => {
+        this.pause()
       }*/
     }
       
