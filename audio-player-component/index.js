@@ -249,9 +249,6 @@ class AudioPlayer extends HTMLElement {
 
       for(let i=0; i<data.length; i++){
         let v_data = data[i] / 512
-        let x = graph_initial_point+i*this.stick_width
-        let y = 197
-        let w = stick_width
         let h = -(v_data*this.height_graph)
         this.ctx_graph.fillRect(i*stick_width,197,stick_width,h)
       }
