@@ -2,7 +2,14 @@
 This an audio player done as a web component for a simple integration later in others projects.
 
 ### Functions
-- Play/Pause/Loop
-- Graph that represents current song
-- Progression bar of the sont in the circle
-- Various mix options via web audio
+- Play
+- Pause
+- Loop
+- Next song
+- Last song
+- +10s / -10s
+- Oscilator for current sont
+- Volume knob
+- Frequency knob
+- Speed knob
+- Stereo direction knob 

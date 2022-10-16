@@ -22,9 +22,10 @@ let style = `
 
 }
 #canvas_graph {
-  border-radius: 5%;
+  border-radius: 4%;
   box-shadow: 2px 2px 8px rgba(32, 32, 32, 0.4), -2px -2px 8px rgba(10,10,10,1);
   border: 1px solid black;
+  background-color: #72147E;
 }
 #buttons_div {
   text-align: center;
@@ -110,6 +111,8 @@ class AudioPlayer extends HTMLElement {
       this.color_3 = "#F9D371"
       this.color_4 = "#31087B"
       this.color_5 = "#72147E"
+      this.color_6 = "#FF6D28"
+      this.color_7 = "#7978FF"
 
       this.song_urls = {
         0: "https://mainline.i3s.unice.fr/mooc/LaSueur.mp3",
@@ -171,7 +174,7 @@ class AudioPlayer extends HTMLElement {
       this.draw_crown_section(160, 20, this.color_1)
 
 
-      this.draw_circle(210, "lightgrey")
+      this.draw_circle(210, this.color_7)
       // update song time circle
       this.update_time_ui(this.color_2)
       this.draw_circle(200, this.color_5)
@@ -231,14 +234,29 @@ class AudioPlayer extends HTMLElement {
       requestAnimationFrame(() => this.update_graph())
     }
 
-    update_graph(graph_initial_point = 2) {
+    update_graph(graph_initial_point = 1) {
       //if(!this.play) cancelAnimationFrame(request) TODO
-      let data = this.get_frequency_data()
-      
-      console.log(data)
 
-      
-      
+      this.ctx_graph.clearRect(0, 0, this.width_graph, this. height_graph)
+      let data = this.get_frequency_data()
+
+      //console.log(data)
+
+      let stick_width = this.width_graph/data.length
+      this.ctx_graph.fillStyle = this.color_6
+
+      //this.ctx_graph.fillRect(10,190,stick_width,-100)
+
+      for(let i=0; i<data.length; i++){
+        let v_data = data[i] / 512
+        let x = graph_initial_point+i*this.stick_width
+        let y = 197
+        let w = stick_width
+        let h = -(v_data*this.height_graph)
+        this.ctx_graph.fillRect(i*stick_width,197,stick_width,h)
+      }
+
+      this.ctx_graph.strokeStyle = this.color_2
       this.ctx_graph.beginPath();
       this.ctx_graph.moveTo(0, 198)
       this.ctx_graph.lineTo(1000, 198)
@@ -266,8 +284,8 @@ class AudioPlayer extends HTMLElement {
 
     get_frequency_data(analyser_node = this.analyser_node) {
       const buffer_lenght = this.analyser_node.frequencyBinCount
-      const data_array = new Float32Array(buffer_lenght)
-      this.analyser_node.getFloatTimeDomainData(data_array)
+      const data_array = new Uint8Array(buffer_lenght)
+      this.analyser_node.getByteFrequencyData(data_array)
       return data_array
     }
 
@@ -278,7 +296,7 @@ class AudioPlayer extends HTMLElement {
       this.source_node = this.audio_ctx.createMediaElementSource(this.player)
       
       this.set_filter_node("lowpass")
-      this.set_analyser_node(2048)
+      this.set_analyser_node(256)
       this.set_audio_stereo_panner_node()
       //this.set_audio_buffer_node()
     }
