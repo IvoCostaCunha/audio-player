@@ -10,17 +10,10 @@ let style = `
 <style>
 
 #main_div {
-  width: 100px;
-  height:100px;
-  margin: 0px auto;
+
 }
 
-#canvas_div{
-  align-items: center;
-  text-align: center
-  display: flex-table;
-  align-content: center;
-  background-color: beige;
+#canvas_div{ 
   
 }
 #canvas {
@@ -28,72 +21,63 @@ let style = `
   box-shadow: 2px 2px 8px rgba(32, 32, 32, 0.4), -2px -2px 8px rgba(10,10,10,1);
 
 }
+#canvas_graph {
+  border-radius : 5%;
+  box-shadow: 2px 2px 8px rgba(32, 32, 32, 0.4), -2px -2px 8px rgba(10,10,10,1);
+  border : 1px solid black;
+}
 #buttons_div {
   border-radius : 25%;
-  padding: 5%;
-  background-color: beige;
+  background-color: grey;
   box-shadow: 2px 2px 8px rgba(32, 32, 32, 0.4), -2px -2px 8px rgba(10,10,10,1);
-}
-#buttons_div_left {
-  align-items: center;
-  align-self: left;
-}
-
-#buttons_div_right {
-  align-items: center;
-  align-self: right;
 }
 </style>
 `
 
 const template = `
-<div id="main_div>
+<div id="main_div">
+
+  <div id="audio_players">
+    <audio id="player" controls crossorigin="anonymous"></audio>
+  </div>
+
   <div id="canvas_div">
     <canvas id="canvas" width="600" height="600"></canvas><br>
+    <canvas id="canvas_graph" width="1000" height="200"></canvas>
   </div>
+
   <div id="buttons_div">
 
-    <div id="buttons_div_left">
-    
-    </div>
+      <button id="loop">loop</button><br>
 
-    <div id="buttons_div_right">
-    
-    </div>
-    <audio id="player"></audio><br>
-    <button id="loop">loop</button><br>
-    <!--<button id="play">play</button>
-    <button id="pause">pause</button>
-    <input 
-      type="range" 
-      min="0" 
-      max="1" 
-      step="0.05" 
-      value="0.2" 
-      id="volume" />
-    <br>-->
-    <label id="volume-value">volume : 20</label><br>
-    <!--<button id="mute">mute</button>-->
-    <!--<button id="plus">+10s</button>
-    <button id="less">-10s</button><br>-->
-    <webaudio-knob 
-      id="volume_knob" 
-      src="./assets/web-audio/simple-gray.png" 
-      value="0.2" max="1" step="0.05" diameter="90" sprites="100" 
-      valuetip="0" tooltip="Volume">
-    </webaudio-knob>
-    <webaudio-knob 
-      id="x_knob" 
-      src="./assets/web-audio/simple-gray.png" 
-      value="0.2" max="1" step="0.05" diameter="90" sprites="100" 
-      valuetip="0" tooltip="Volume">
-    </webaudio-knob>
-    <webaudio-knob 
-      id="y_knob" 
-      src="./assets/web-audio/simple-gray.png" 
-      value="0.2" max="1" step="0.05" diameter="90" sprites="100" 
-      valuetip="0" tooltip="Volume">
-    </webaudio-knob>
+      <webaudio-knob 
+        id="volume_knob" 
+        src="./assets/web-audio/guitar-poti-volume.png" 
+        value="0.2" max="1" step="0.1" diameter="70" sprites="10" 
+        valuetip="0" tooltip="Volume">
+      </webaudio-knob>
+
+      <webaudio-knob 
+        id="frequency_knob" 
+        src="./assets/web-audio/little-phatty.png" 
+        value="40" max="10000" step="10" diameter="90" 
+        valuetip="0" tooltip="Frequency">
+      </webaudio-knob>
+      
+      <webaudio-knob 
+        id="speed_knob" 
+        src="./assets/web-audio/little-phatty.png" 
+        value="1" max="5" step="0.1" diameter="90"
+        valuetip="0" tooltip="Speed">
+      </webaudio-knob>
+      
+      <webaudio-knob
+        id="stereo_knob" 
+        src="./assets/web-audio/simple-gray.png" 
+        value="1" max="3" step="1" diameter="90"
+        valuetip="0" tooltip="Stereo">
+      </webaudio-slider>
+
   </div>
 </div>
 `
@@ -108,6 +92,14 @@ class AudioPlayer extends HTMLElement {
       this.html = style
       this.html = this.html + template
       this.loop = false
+      this.volume = 0.2
+      this.frequency = 40
+
+      this.song_urls = {
+        1: "https://ia600207.us.archive.org/25/items/midsummer_2006/01_jam_with_tim_180606.mp3",
+        2: "https://ia800302.us.archive.org/17/items/J_DAgostino_More/03_Little_Hope_of_an_Early_Settlement.mp3",
+
+      }
     }
     
     fix_relative_urls() {
@@ -129,9 +121,12 @@ class AudioPlayer extends HTMLElement {
 
       this.ctx.clearRect(0, 0, this.width, this.height)
 
-      let file_name = this.player.src.substring(this.player.src.lastIndexOf ('/')+1)
-      let time_info_current = Math.round(this.player.currentTime,2) + " s" 
-      let time_info_duration = Math.round(this.player.duration,2) + " s"
+      let file_name = this.get_audio_name()
+      let time_info_current = this.get_current_audio_time()
+      let time_info_duration = this.get_total_audio_time()
+      let time = time_info_current + "(" + time_info_duration + ")"
+      let volume = (this.volume*100).toString()
+      volume = volume.substring(0,4)+"%"
 
       
       for(let i = 30; i <= 360; i += 30) {
@@ -164,11 +159,133 @@ class AudioPlayer extends HTMLElement {
       this.draw_circle(this.ctx)
       
       // For a canvas 600*600
-      this.ctx.strokeText(file_name, this.canvas_center_x-45, this.canvas_center_y)
-      this.ctx.strokeText(time_info_current, this.canvas_center_x-10, this.canvas_center_y+20)
-      this.ctx.strokeText(time_info_duration, this.canvas_center_x-10, this.canvas_center_y+40)
+      this.ctx.strokeText(file_name, this.get_title_position(file_name), this.canvas_center_y)
+      this.ctx.strokeText(time, this.canvas_center_x-40, this.canvas_center_y+40)
+      this.ctx.strokeText(volume, this.canvas_center_x-12.5, this.canvas_center_y+60)
 
       requestAnimationFrame(() => this.update_ui())
+    }
+
+    draw_graph() {
+      requestAnimationFrame(() => this.update_graph())
+    }
+
+    update_graph(graph_initial_point = 2) {
+      let data = this.get_frequency_data()
+      let stick_width = this.width/data.lenght
+      let stick_height
+      let x = 0
+      let y = null
+
+      this.ctx_graph.save()
+
+      for(let i=0; i<=data.lenght; i++) {
+        console.log("tetsé")
+        stick_height = data[i]/2
+        console.log(stick_height)
+        y = Math.random()*10-100 // should be music values
+        //y = this.height_graph-this/2 
+        this.ctx_graph.fillRect(x, 196, 50, -20)
+        x += stick_width + 10
+      }
+
+      //if(clear) this.ctx_graph.clearRect(0, 0, this.width_graph, this.height_graph)
+      
+      this.ctx_graph.beginPath();
+      this.ctx_graph.moveTo(0, 198)
+      this.ctx_graph.lineTo(1000, 198)
+      this.ctx_graph.lineWidth = 2;
+      this.ctx_graph.stroke();
+
+      this.ctx_graph.beginPath();
+      this.ctx_graph.moveTo(0, 2)
+      this.ctx_graph.lineTo(1000, 2)
+      this.ctx_graph.lineWidth = 2;
+      this.ctx_graph.stroke();
+
+      
+
+      //this.ctx_graph.fillRect(graph_point, 196, stick_width, frequency_value)
+      this.ctx_graph.restore()
+      requestAnimationFrame(() => this.update_graph(graph_initial_point))
+    }
+
+    set_audio_player() {
+      this.player.src = this.song_urls[2]
+      //this.player.muted = false
+      console.log("<audio> muted : " + this.player.muted)
+    }
+
+    set_web_audio() {
+      //this.player.play()
+      this.audio_ctx = new AudioContext()
+      this.source_node = this.audio_ctx.createMediaElementSource(this.player)
+      
+      this.set_filter_node("lowpass")
+      this.set_analyser_node(256)
+      this.set_audio_panner_node
+      //this.set_audio_buffer_node()
+    }
+
+    set_filter_node(type) {
+      this.filter_node = this.audio_ctx.createBiquadFilter()
+      this.filter_node.type = type
+      this.filter_node.frequency.value = this.frequency
+      this.filter_node.Q.value = 8.81
+      this.source_node.connect(this.filter_node).connect(this.audio_ctx.destination)
+    }
+
+    set_audio_buffer_node() {
+      // used with decodeAudioData() ...
+      this.audio_buffer_node = this.audio_ctx.createBufferSource()
+      this.source_node.connect(this.audio_buffer_node).connect(this.audio_ctx.destination)
+    }
+
+    set_audio_panner_node() {
+      this.audio_panner_node = this.audio_ctx.createStereoPanner()
+      this.source_node.connect(this.audio_panner_node).connect(this.audio_ctx.destination)
+    }
+
+    set_analyser_node(fftSize = 256) {
+      this.analyser_node = this.audio_ctx.createAnalyser()
+      this.analyser_node.fftSize = fftSize // 2048 default
+      this.source_node.connect(this.analyser_node).connect(this.audio_ctx.destination)
+    }
+
+    get_frequency_data(analyser_node = this.analyser_node) {
+      const buffer_lenght = this.analyser_node.frequencyBinCount
+      const data_array = new Uint8Array(buffer_lenght)
+      this.analyser_node.getByteTimeDomainData(data_array)
+      return data_array
+    }
+
+    set_audio_speed(value) {
+      this.player.playbackRate = value
+    }
+
+    get_current_audio_time() {
+      let minutes = Math.floor(this.player.currentTime / 60);
+      let seconds = Math.floor(this.player.currentTime - minutes*60)
+      let expr = minutes + "m " + seconds + "s"
+      return(expr)
+    }
+
+    get_total_audio_time() {
+      let minutes = Math.floor(this.player.duration / 60);
+      let seconds = Math.floor(this.player.duration - minutes*60)
+      let expr = minutes + "m " + seconds + "s"
+      return(expr)
+    }
+
+    get_audio_name() {
+      let title = this.player.src.substring(this.player.src.lastIndexOf ('/')+1)
+      title = (title.lenght < 30) ? title : title.substring(0,30)
+      return title
+    }
+
+    get_title_position(title) {
+      let x = (title.lenght > 30) ? ((this.canvas_center_x-90) + (30-title.lenght)) : (this.canvas_center_x-90)
+      return x
     }
 
     draw_circle(r = this.radius, center_x = this.canvas_center_x, center_y = this.canvas_center_y, background_color = "#FFFFFF", stroke_color = "#000000") {
@@ -212,14 +329,6 @@ class AudioPlayer extends HTMLElement {
       this.ctx.restore()
     }
 
-    set_audio_player() {
-      this.player = this.shadowRoot.querySelector("#player")
-      this.player.src = "https://samplelib.com/lib/preview/mp4/sample-5s.mp4"
-      
-      this.set_listeners()
-
-    }
-
     set_loop() {
       // condition ? exprIfTrue : exprIfFalse
       this.player.loop = this.player.loop ? false : true
@@ -230,6 +339,7 @@ class AudioPlayer extends HTMLElement {
     play() {
       console.log("play !")
       this.player.play()
+      this.get_frequency_data()
     }
 
     pause() {
@@ -237,20 +347,24 @@ class AudioPlayer extends HTMLElement {
       this.player.pause()
     }
 
-    set_volume(e) {
-      const volume = e.target.value
-      this.player.volume = volume
-      const label_text = "volume : " + (volume*100)
-      this.shadowRoot.querySelector("#volume-value").textContent = label_text
+    set_frequency(value) {
+      this.filter_node.frequency.value = parseInt(value)
+      console.log("Changed frequency to : " + value)
+    }
+
+    set_volume(value) {
+      this.player.volume = value
+      this.volume = value
     }
 
     plus_seconds(seconds) {
-      this.player.currrentTime = seconds
-      console.log(this.player.currentTime + "changed")
+      this.player.currrentTime += seconds
+      console.log("audio time changed : " + this.player.currentTime)
     }
 
     less_seconds(seconds) {
       this.player.currrentTime -= seconds
+      console.log("audio time changed : " + this.player.currentTime)
     }
 
     set_listeners() {
@@ -258,9 +372,15 @@ class AudioPlayer extends HTMLElement {
         this.set_loop()
       }
       this.shadowRoot.querySelector('#volume_knob').oninput =  (event) => {
-        this.set_volume(event)
+        this.set_volume(event.target.value)
       }
-      this.shadowRoot.querySelector("canvas").onclick = (event) => {
+      this.shadowRoot.querySelector('#frequency_knob').oninput = (event) => {
+        this.set_frequency(event.target.value)
+      }
+      this.shadowRoot.querySelector('#speed_knob').oninput = (event) => {
+        this.set_audio_speed(event.target.value)
+      }
+      this.shadowRoot.querySelector("#canvas").onclick = (event) => {
 
         let get_mouse_position = (canvas,event) => {
           let rect = canvas.getBoundingClientRect();
@@ -283,7 +403,7 @@ class AudioPlayer extends HTMLElement {
         let loop_zone = {x: 270, y: 510, width: 60, height: 90}
 
         if (is_inside(mouse_pos, play_zone)) this.play()
-        else if (is_inside(mouse_pos, pause_zone)) this.pause()
+        else if (is_inside(mouse_pos, pause_zone)) this.pause() && this.audio_ctx.resume()
         else if (is_inside(mouse_pos, plus10_zone)) this.plus_seconds(3)
         else if (is_inside(mouse_pos, less10_zone)) this.less_seconds(10)
         else if (is_inside(mouse_pos, loop_zone)) this.set_loop()
@@ -320,19 +440,33 @@ class AudioPlayer extends HTMLElement {
   
     connectedCallback() {
       // called on instanciation
-      this.shadowRoot.innerHTML = this.html;
-      this.canvas = this.shadowRoot.querySelector("canvas")
+      this.shadowRoot.innerHTML = this.html
+
+      this.canvas_graph = this.shadowRoot.querySelector("#canvas_graph")
+      this.ctx_graph = this.canvas_graph.getContext("2d")
+
+      this.height_graph = this.canvas_graph.height
+      this.width_graph = this.canvas_graph.width
+
+      this.canvas = this.shadowRoot.querySelector("#canvas")
       this.ctx = this.canvas.getContext("2d")
+
       this.height = this.canvas.height
       this.width = this.canvas.width
       this.canvas_center_x = this.width/2
       this.canvas_center_y = this.height/2
-      console.log("canvas center : x : " + this.canvas_center_x  + " y : " + this.canvas_center_y)
       this.radius = this.canvas.width/2
-      console.log("radius : " + this.radius)
+      //console.log("canvas center : x : " + this.canvas_center_x  + " y : " + this.canvas_center_y)
+      //console.log("radius : " + this.radius)
+
+      this.player = this.shadowRoot.querySelector("#player")
+
       this.fix_relative_urls()
       this.set_audio_player()
+      this.set_listeners()
       this.draw_ui()
+      this.draw_graph()
+      this.set_web_audio()
     }
 }
 
