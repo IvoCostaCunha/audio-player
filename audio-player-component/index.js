@@ -68,7 +68,7 @@ const template = `
       <webaudio-knob 
         id="frequency_knob" 
         src="./assets/web-audio/little-phatty.png" 
-        value="40" max="10000" step="10" diameter="90" 
+        value="40" min="0" max="10000" step="10" diameter="90" 
         valuetip="0" tooltip="Frequency">
       </webaudio-knob>
       
@@ -76,7 +76,7 @@ const template = `
       <webaudio-knob 
         id="speed_knob" 
         src="./assets/web-audio/little-phatty.png" 
-        value="1" max="10" step="0.1" diameter="90"
+        value="1" min="" max="2" step="0.1" diameter="90"
         valuetip="0" tooltip="Speed">
       </webaudio-knob>
       
@@ -84,7 +84,7 @@ const template = `
       <webaudio-knob
         id="stereo_knob" 
         src="./assets/web-audio/little-phatty.png" 
-        value="0" min="-100000" max="100000" step="100" diameter="90"
+        value="0" min="-1" max="1" step="0.1" diameter="90"
         valuetip="0" tooltip="Stereo directions">
       </webaudio-slider>
   </div>
@@ -116,14 +116,12 @@ class AudioPlayer extends HTMLElement {
 
       this.song_urls = {
         0: "https://mainline.i3s.unice.fr/mooc/LaSueur.mp3",
-        1: "https://cf-media.sndcdn.com/XDhRSrzYycPq.128.mp3?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiKjovL2NmLW1lZGlhLnNuZGNkbi5jb20vWERoUlNyell5Y1BxLjEyOC5tcDMqIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNjY1OTUyODA2fX19XX0_&Signature=SDYRFUkHYhQttQ~z1lPLWrcFEbwVixfHtJKkMKN7Sshgd7XBB8isbnW2FEFs3llx1s0ekybgr32Xjnc-CdRSd7rXu9AjCsgW0cpHIV9UjbQcSOr~5hQIfr4P0IPGmdxGMkAFmr5FrJdLuwvSegAC-trsRI99C7dbXJsd6MaQv-VimMHnU7GtQUPVD6JA7Wk-Kum~Z-CrDO4qCtMK5XHiNFH862UkT5okvRVMitXpkpqggs28o92~ZNhP~fgepT0RcvAXM1UCF9aiQGtT1z0M8hFjFf5IuhJCq6cUkJliiLUbD7iYt8VBxBubK4QK2RlN1ZjP8BN79E0MLjQmSDVLaQ__&Key-Pair-Id=APKAI6TU7MMXM5DG6EPQ",
-        2: "https://cf-media.sndcdn.com/6VYX2olNotqk.128.mp3?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiKjovL2NmLW1lZGlhLnNuZGNkbi5jb20vNlZZWDJvbE5vdHFrLjEyOC5tcDMqIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNjY1OTUzNzE1fX19XX0_&Signature=GzthaMa6aNKFrAhAKOUWMFLBctWG~02eXB5KknCBDwoTQQjsGyWSXBEdFDYKEEoRDWCdGuxggNy1VraHmlmLOHu-ti6i3kr-FahQfQrPlJM4gTVOUuXrMd5JGUTnBaRunsTyvlVUsJ3ubMd0p6qt6U9Of7c8PJ6fU1rRzkHr-76R0hZegqyl-TQ9-JiaGG74XB1fJ~76yy9C1x5JedUDjQMV1BjwQy9s2x2OTsra2S~XEJpkNHHaoe7l0oUSfaWIjxkta9tltpdSLM5SL5cVZvamp9M1ny3LULcj9eKMn5L86DZDiGArzh26yATe7ScIr6svNhAv7VzreiBvpyabEg__&Key-Pair-Id=APKAI6TU7MMXM5DG6EPQ",
-        3: "https://cf-media.sndcdn.com/vdo40LlqfjOF.128.mp3?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiKjovL2NmLW1lZGlhLnNuZGNkbi5jb20vdmRvNDBMbHFmak9GLjEyOC5tcDMqIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNjY1OTU2MDE0fX19XX0_&Signature=NCTH0IuAg2viscYpOf6T0ggPrSvbRwumBkdktdoES4tc2OMlnFNZqpO0dbDx9S-qeg6EvrToAtIXvctkKo00D7ejz8hHhHcjiDskVUwzwl5Tatfo4f1hs8a1YHQh1LCghaCxg7g1xjjQ6bryDSe~Ec9r9609mHl-oQtREHrdzB7tZJWCi3e5HY0nxxHXRotjPhi~mlOSQDFEY4BsJg6q0Dwz2oJq41A3M8nBoDGYUywgny6BCEDu7abbZ6fJ-CCvUikaO46H0zGo6AatSCTSNgmMy9K65~mdGB1jHOx9CJ5m8hc2yG-zk6PXyOE7rcCWoCs9wKFOYylNbHO6harCMw__&Key-Pair-Id=APKAI6TU7MMXM5DG6EPQ",
-        4: "https://cf-media.sndcdn.com/8nAalQ3vsfHI.128.mp3?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiKjovL2NmLW1lZGlhLnNuZGNkbi5jb20vOG5BYWxRM3ZzZkhJLjEyOC5tcDMqIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNjY1OTU0OTkxfX19XX0_&Signature=cJwuCMfDCcSVXH1lF4P-tVuIYzPLzZpAjUy3uvX8f9pTfkJ-lgwatJAR-wIzpPvyuVrX5SslkCe~33oA4kK9720a0q9zExfeBv7WivM3xio3Y1LVAlTlrdy2SWdnrdXyDJHdGsp6X8IeKP3WYYVtr97pfJaVyWrfACT2rQ~V9iubUvu1IOiiL59G-suvhUz0AUX9qcGoC~g6Pj2R7KyMswzU7uVCYEhaEcOxRPglk2oa2B51ZtYYfsu60w4x6Xc0HYBtpiuUpLNMJ9Pm~6N5g4FMHQsV-NaclQw~3pyX59i1D9MyyYrkNyhHQTikCuglXwHywaZCc1fTjgvOtvV2Ug__&Key-Pair-Id=APKAI6TU7MMXM5DG6EPQ",
-        5: "https://cf-media.sndcdn.com/uwEa80xeqdMG.128.mp3?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiKjovL2NmLW1lZGlhLnNuZGNkbi5jb20vdXdFYTgweGVxZE1HLjEyOC5tcDMqIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNjY1OTYyMjUwfX19XX0_&Signature=Kf-0uPYNlvLPqE8qyhhCjxCsYMqDCFTLGR3i6RkfUXbVHz1uh-vcx8WrcITHnmYBENQWYsjZqb5mssKQ6IlztNtkIjJVknRXS0M66GU7RLB72JcaKhHygwvgp5NmkELLjIrtRSizXesL08o9Plh36Kt0Gt9JePYava9D8TDC1i1Jhez13nNNQXvph4KaSLQ4I~TECTrhgP0NYJrRnqcszxfVxHp0R~ynD7z~eVASOVZX9M-DJrqyuY97P54gPs1CIKfeLK7Bfm5WpgENPdo7usvuG24Yg17b7QClHT2K3FgafXpVCOirPl9s4GOTaY1KYu3ACgFNYwF8-tTizJitXQ__&Key-Pair-Id=APKAI6TU7MMXM5DG6EPQ",
-        6: "https://cf-media.sndcdn.com/CYTvXVv5qSc7.128.mp3?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiKjovL2NmLW1lZGlhLnNuZGNkbi5jb20vQ1lUdlhWdjVxU2M3LjEyOC5tcDMqIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNjY1OTUxODc1fX19XX0_&Signature=EslLcGa8j8gOk09KQmGbCXnnZfXf3zZvagB~ik6JuqK5hF12nm~K8r3eWUd-rAnbrwQBxKeCN7Q3GvflkYdO8rt-CD-dSVfeIj9p-bGN4oBfOZR76hiEv2XqFnPcG~AHS-NmG4gtTFpayOtp8gYyo2vgkYFoief3xM0QjGX-guBmwV6NdcUpE8UytNEAGwLQaiTFAUQHFAORa9s6e4rMRrRqB1mBU7TnXP5pp1ENJH7Wm9Zyp-tTXR4Qnitm2rT5uWRvrtSqc0pTzLcJlETdWfhU3ZyxwQ71m2dKQY~paxadd~qL61eEbOWLqAqZ0R2EbdORIqOOEhUaYV1qH2DTOw__&Key-Pair-Id=APKAI6TU7MMXM5DG6EPQ",
-        
-        // add more song here ...
+        1: "../audio-player-component/assets/mp3/gamemusic.mp3",
+        2: "../audio-player-component/assets/mp3/opera-what.mp3",
+        3: "../audio-player-component/assets/mp3/retrowave.mp3",
+        4: "../audio-player-component/assets/mp3/aaaaaaaaaaaaaaaaaaaaaaaaa.mp3",
+        5: "../audio-player-component/assets/mp3/edge-of-space.mp3",
+        // add more songs here ...
       }
 
       this.current_song = 0
@@ -205,6 +203,7 @@ class AudioPlayer extends HTMLElement {
       this.ctx.strokeText(file_name, this.get_title_position(file_name), this.canvas_center_y)
       this.ctx.strokeText(time, this.canvas_center_x-35, this.canvas_center_y+40)
       this.ctx.strokeText(volume, this.canvas_center_x-32, this.canvas_center_y+60)
+      if(this.loop) this.ctx.strokeStyle = "#2B7A0B"
       this.ctx.strokeText(loop, this.canvas_center_x-24, this.canvas_center_y+80)
 
       this.ctx.strokeStyle = "#FFFFFF"
@@ -276,19 +275,18 @@ class AudioPlayer extends HTMLElement {
     set_analyser_node(fftSize = 2048) {
       this.analyser_node = this.audio_ctx.createAnalyser()
       this.analyser_node.fftSize = fftSize // 2048 default
-      this.source_node.connect(this.analyser_node)
+      this.source_node.connect(this.analyser_node).connect(this.audio_ctx.destination)
     }
 
     get_frequency_data(analyser_node = this.analyser_node) {
-      const buffer_lenght = this.analyser_node.frequencyBinCount
-      const data_array = new Uint8Array(buffer_lenght)
+      const buffer_length = this.analyser_node.frequencyBinCount
+      const data_array = new Uint8Array(buffer_length)
       this.analyser_node.getByteFrequencyData(data_array)
       return data_array
     }
 
 
     set_web_audio() {
-      //this.player.play()
       this.audio_ctx = new AudioContext()
       this.source_node = this.audio_ctx.createMediaElementSource(this.player)
       
@@ -344,12 +342,13 @@ class AudioPlayer extends HTMLElement {
 
     get_audio_name() {
       let title = this.player.src.substring(this.player.src.lastIndexOf ('/')+1)
-      title = (title.lenght < 27) ? title : title.substring(0,27)
+      title = (title.length < 27) ? title : title.substring(0,27)
       return title
     }
 
     get_title_position(title) {
-      let x = (title.lenght < 27) ? ((this.canvas_center_x-90) + title.lenght) : (this.canvas_center_x-90)
+      let x = title.length > 25 ? (this.canvas_center_x-85): ((this.canvas_center_x)-(title.length*3))
+      console.log(x)
       return x
     }
 
@@ -445,7 +444,7 @@ class AudioPlayer extends HTMLElement {
       console.log(this.current_song)
       this.player.src = this.song_urls[this.current_song]
       this.set_audio_speed(this.speed)
-      this.set_frequency(this.frequency)
+      this.set_frequency(this.frequency) //Doesn't work
       this.set_stereo_direction(this.stereo_pan_value)
       this.set_volume(this.volume)
       this.play()
@@ -456,10 +455,10 @@ class AudioPlayer extends HTMLElement {
       this.current_song = this.current_song-1 > 0 ? this.current_song-1 : 0
       this.player.src = this.song_urls[this.current_song]
       this.set_audio_speed(this.speed)
-      this.set_frequency(this.frequency)
+      this.set_frequency(this.frequency) // Doesn't work
       this.set_stereo_direction(this.stereo_pan_value)
       this.set_volume(this.volume)
-      this.play()
+      this.player.play()
     }
 
     plus_seconds(seconds) {
@@ -478,18 +477,23 @@ class AudioPlayer extends HTMLElement {
 
     set_listeners() {
       this.shadowRoot.querySelector('#volume_knob').oninput =  (event) => {
+        //if(this.audio_ctx.state !== 'running') {this.audio_ctx.resume();}
         this.set_volume(event.target.value)
       }
       this.shadowRoot.querySelector('#frequency_knob').oninput = (event) => {
+        //if(this.audio_ctx.state !== 'running') {this.audio_ctx.resume();}
         this.set_frequency(event.target.value)
       }
       this.shadowRoot.querySelector('#speed_knob').oninput = (event) => {
+        //if(this.audio_ctx.state !== 'running') {this.audio_ctx.resume();}
         this.set_audio_speed(event.target.value)
       }
       this.shadowRoot.querySelector("#stereo_knob").oninput = (event) => {
+        //if(this.audio_ctx.state !== 'running') {this.audio_ctx.resume();}
         this.set_stereo_direction(event.target.value)
       }
       this.shadowRoot.querySelector("#canvas").onclick = (event) => {
+        if(this.audio_ctx.state !== 'running') {this.audio_ctx.resume();}
 
         let get_mouse_position = (canvas,event) => {
           let rect = canvas.getBoundingClientRect();
